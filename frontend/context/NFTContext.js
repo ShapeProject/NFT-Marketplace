@@ -163,6 +163,26 @@ export const NFTProvider = ({ children }) => {
     setIsLoadingNFT(false);
   };
 
+  const sendNFT = async (from, to, nft) => {
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    // get signer data
+    const signer = provider.getSigner();
+    // create contract data
+    const contract = new ethers.Contract(
+      MarketAddress,
+      MarketAddressABI,
+      signer,
+    );
+
+    const transaction = await contract.sendNFT(from, to, nft.tokenId);
+
+    setIsLoadingNFT(true);
+    await transaction.wait();
+    setIsLoadingNFT(false);
+  };
+
   /**
    * connectWallet function
    * @returns
@@ -203,6 +223,7 @@ export const NFTProvider = ({ children }) => {
       value={{
         nftCurrency,
         buyNft,
+        sendNFT,
         createSale,
         fetchNFTs,
         fetchMyNFTsOrCreatedNFTs,

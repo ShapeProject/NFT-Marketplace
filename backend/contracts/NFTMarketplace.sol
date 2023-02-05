@@ -155,7 +155,27 @@ contract NFTMarketplace is ERC721URIStorage, ISlashCustomPlugin {
 
       payable(owner).transfer(listingPrice);
       payable(idToMarketItem[tokenId].seller).transfer(msg.value);
+    }
 
+    // In case "EVENT" Transfers ownership of the item.
+    // Just inplement transfer, Payment complete by slash before.
+    function sendNFT(
+      address from,
+      address to,
+      uint256 tokenId
+    ) public {
+      require(isApprovedForAll(ownerOf(tokenId), address(this)), "The owner has not approved the token id to sell");
+      
+      address oldOwner = ownerOf(tokenId);
+      idToMarketItem[tokenId].owner = payable(to);
+      idToMarketItem[tokenId].sold = true;
+      idToMarketItem[tokenId].seller = payable(address(0));
+      _itemsSold.increment();
+
+      // transer NFT
+      _transfer(oldOwner, to, tokenId);
+
+      // payable(owner).transfer(listingPrice);
     }
 
     /**

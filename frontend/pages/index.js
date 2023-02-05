@@ -1,6 +1,7 @@
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { useContext, useEffect, useRef, useState } from 'react';
+import { ethers } from 'ethers';
 
 import images from '../assets';
 import { Banner, CreatorCard, Loader, NFTCard, SearchBar } from '../components';
@@ -14,7 +15,7 @@ import { shortenAddress } from '../utils/shortenAddress';
  * @returns
  */
 const Home = () => {
-  const { fetchNFTs } = useContext(NFTContext);
+  const { fetchNFTs, fetchContract, sendNFT } = useContext(NFTContext);
   const [nfts, setNfts] = useState([]);
   const [nftsCopy, setNftsCopy] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +26,15 @@ const Home = () => {
   const parentRef = useRef(null);
 
   const { theme } = useTheme();
+
+  // After settlement by slash, recieve event from BC to transfer NFT
+  useEffect(() => {
+    const transferNFT = (_from, _to, _id) => {
+      sendNFT(_from, _to, _id);
+    };
+    const filter = fetchContract.filters.Payment(null, null, null);
+    fetchContract.on(filter, transferNFT);
+  });
 
   useEffect(() => {
     fetchNFTs().then((items) => {

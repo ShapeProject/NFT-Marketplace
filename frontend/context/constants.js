@@ -6,8 +6,8 @@ export const PAYMENY_URL = 'https://testnet.slash.fi/payment-merchant/5529fcdc62
 // contract address & ABI
 
 /* goerli */
-// export const MarketAddress = '0x08c49b662c0c2A5D5f0560E01eE3c3fEdF8938d9';
+export const MarketAddress = '0x9C0F8EE46CeEdA13a40E7681Fd2358e26F5c5122';
 
 /* shibuya */
-export const MarketAddress = '0x3c955E552Fd383435765313330301c23f014e0a6';
+// export const MarketAddress = '0x3c955E552Fd383435765313330301c23f014e0a6';
 export const MarketAddressABI = marketAbi.abi;
