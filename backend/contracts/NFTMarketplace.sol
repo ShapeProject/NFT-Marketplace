@@ -174,7 +174,6 @@ contract NFTMarketplace is ERC721URIStorage, ISlashCustomPlugin {
 
       // transer NFT
       _transfer(oldOwner, to, tokenId);
-
       // payable(owner).transfer(listingPrice);
     }
 
