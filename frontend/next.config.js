@@ -12,6 +12,7 @@ module.exports = {
       'ipfs.infura.io',
       'api.pinata.cloud',
       'gateway.pinata.cloud',
+      'img.travel.rakuten.co.jp',
     ],
   },
 };
