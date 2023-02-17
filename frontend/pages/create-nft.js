@@ -1,15 +1,15 @@
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { useCallback, useContext, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 import axios from 'axios';
 import FormData from 'form-data';
+import * as fs from 'fs';
 import images from '../assets';
 import { Button, Input, Loader } from '../components';
 import { NFTContext } from '../context/NFTContext';
-
 // baseURI for pinata API
 const baseAPIUrl = 'https://api.pinata.cloud';
 
@@ -20,13 +20,29 @@ const baseAPIUrl = 'https://api.pinata.cloud';
 const CreateItem = () => {
   const { createSale, isLoadingNFT } = useContext(NFTContext);
   const [fileUrl, setFileUrl] = useState(null);
-  const [postedFile, SetPostedFile] = useState(null);
+  const [imageApiUrl, setImageApiUrl] = useState(null);
+  const [postedFile, setPostedFile] = useState(null);
   const { theme } = useTheme();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [hotelBasicInfo, setHotelBasicInfo] = useState([]);
+  // const [apiHotelName, setApiHotelName] = useState(null);
+  // const [apiAddress2, setApiAddress2] = useState(null);
+  // const [apiHotelMinCharge, setApiHotelMinCharge] = useState(null);
+  // const [hotelPolicyInfo, setHotelPolicyInfo] = useState([]);
 
   console.log(`fileUrl : ${fileUrl}`);
 
   const pinataApiKey = process.env.NEXT_PUBLIC_PROJECT_ID;
   const pinataApiSecret = process.env.NEXT_PUBLIC_PROJECT_SECRET;
+
+  // const { hotelMinCharge, address1, address2, hotelName } = hotelBasicInfo;
+  console.log('fs: ', fs);
+  // console.log('globalのhotel :', hotelName);
+  // console.log('globalのhotel :', address1);
+  // console.log('globalのhotel :', address2);
+  // console.log('globalのhotel :', hotelImageUrl);
+  // console.log('globalのhotel :', hotelMinCharge);
 
   /**
    * uploadToInfura function
@@ -34,6 +50,7 @@ const CreateItem = () => {
    */
   const uploadToInfura = async (file) => {
     try {
+      console.log('uploadToInfuraの中のfile', file);
       // create request params
       const postData = new FormData();
       postData.append('file', file);
@@ -62,7 +79,7 @@ const CreateItem = () => {
       const url = `https://gateway.pinata.cloud/ipfs/${res.data.IpfsHash}`;
       console.log(`fileUrl : ${url}`);
 
-      SetPostedFile(file);
+      setPostedFile(file);
       setFileUrl(url);
     } catch (error) {
       console.log('Error uploading file: ', error);
@@ -73,6 +90,8 @@ const CreateItem = () => {
    * onDrop callback function
    */
   const onDrop = useCallback(async (acceptedFile) => {
+    console.log('acceptedFile[0]', acceptedFile[0]);
+    console.log('acceptedFile', acceptedFile);
     await uploadToInfura(acceptedFile[0]);
   }, []);
 
@@ -102,7 +121,27 @@ const CreateItem = () => {
     name: '',
     description: '',
   });
-  const router = useRouter();
+  // hotel api 実装のため一旦コメントアウト
+  // const router = useRouter();
+
+  useEffect(async () => {
+    if (!router.isReady) return;
+
+    setHotelBasicInfo(router.query);
+    console.log('router.query.hotelImageUrl', router.query.hotelImageUrl);
+    const { hotelImageUrl, hotelName, address2, hotelMinCharge } = router.query;
+    console.log('useEffectのimageURL :', hotelImageUrl);
+    console.log(Date.now());
+    // setApiHotelName(hotelName);
+    // setApiAddress2(address2);
+    // setApiHotelMinCharge(hotelMinCharge);
+
+    updateFormInput({ ...formInput, name: hotelName });
+    updateFormInput({ ...formInput, description: address2 });
+    updateFormInput({ ...formInput, price: hotelMinCharge });
+
+    setImageApiUrl(hotelImageUrl);
+  }, [router.isReady]);
 
   /**
    * createMarket function
@@ -110,7 +149,12 @@ const CreateItem = () => {
   const createMarket = async () => {
     // get form datas
     const { name, description, price } = formInput;
-    if (!name || !description || !price || !fileUrl) return;
+    console.log(`"name: " ${name}`);
+    console.log(`"description: " ${description}`);
+    console.log(`"price: " ${price}`);
+    console.log(`"fileUrl: " ${fileUrl}`);
+    console.log(`"imageApiUrl: " ${imageApiUrl}`);
+    if (!name || !description || !price || (!fileUrl || !imageApiUrl)) return;
 
     try {
       // create req param datas
@@ -227,6 +271,19 @@ const CreateItem = () => {
                 </div>
               </aside>
             )}
+            {/* {fileUrl ? (
+              <aside>
+                <div>
+                  <img src={fileUrl} alt="Asset_file" />
+                </div>
+              </aside>
+            ) : (
+              <aside>
+                <div>
+                  <img src={imageApiUrl} alt="Asset_file" />
+                </div>
+              </aside>
+            )} */}
           </div>
         </div>
 
@@ -234,12 +291,14 @@ const CreateItem = () => {
           inputType="input"
           title="Name"
           placeholder="Asset Name"
+          value={formInput.name}
           handleClick={(e) => updateFormInput({ ...formInput, name: e.target.value })}
         />
 
         <Input
           inputType="textarea"
           title="Description"
+          value={formInput.description}
           placeholder="Asset Description"
           handleClick={(e) => updateFormInput({ ...formInput, description: e.target.value })}
         />
@@ -247,6 +306,7 @@ const CreateItem = () => {
         <Input
           inputType="number"
           title="Price"
+          value={formInput.price}
           placeholder="Asset Price"
           handleClick={(e) => updateFormInput({ ...formInput, price: e.target.value })}
         />

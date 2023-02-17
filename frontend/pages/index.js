@@ -31,6 +31,8 @@ const Home = () => {
   const REQUEST_URL = 'https://app.rakuten.co.jp/services/api/Travel/SimpleHotelSearch/20170426';
   const APP_ID = '1034665255539887341';
 
+  console.log('hotelList: ', hotelList);
+
   // get hotel information from RAKUTEN TRAVEL API
   const rakutenAPI = async () => {
     try {
@@ -62,34 +64,12 @@ const Home = () => {
       console.log('res: ', res.data.hotels);
       const { hotels } = res.data;
       setHotelList(hotels);
-      // hotels.map((hotel) => {
-      //   const {
-      //     hotelNo,
-      //     hotelName,
-      //     hotelImageUrl,
-      //     roomImageUrl,
-      //     hotelMinCharge,
-      //     address1,
-      //     reviewAverage,
-      //   } = hotel.hotel[0].hotelBasicInfo;
-      //   console.log(hotelName);
-      //   return (
-      //     <HotelCard key={hotelNo} name={hotelName} roomImage={roomImageUrl} hotelImage={hotelImageUrl} price={hotelMinCharge} address={address1} review={reviewAverage} />
-      //   );
-      // });
 
       console.log('returnあと');
     } catch (error) {
       console.log('Error getting info of hotels: ', error);
     }
   };
-
-  // useEffect(() => {
-  //   rakutenAPI().then((hotelsData) => {
-  //     setHotelList(hotelsData);
-  //     setIsLoading(false);
-  //   });
-  // }, []);
 
   useEffect(() => {
     fetchNFTs().then((items) => {
@@ -227,7 +207,7 @@ const Home = () => {
           {!hotelList ? (
             <p>You can search Hotel here</p>
           ) : (
-            <HotelCard hotels={hotelList} />
+            <HotelCard key={hotelList.hotelNo} hotels={hotelList} />
           )}
         </div>
 
