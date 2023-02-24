@@ -24,11 +24,12 @@ const CreateItem = () => {
   const [postedFile, setPostedFile] = useState(null);
   const { theme } = useTheme();
   const router = useRouter();
+  // const [contentUrl, setContentUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hotelBasicInfo, setHotelBasicInfo] = useState([]);
-  // const [apiHotelName, setApiHotelName] = useState(null);
-  // const [apiAddress2, setApiAddress2] = useState(null);
-  // const [apiHotelMinCharge, setApiHotelMinCharge] = useState(null);
+  const [apiHotelName, setApiHotelName] = useState(null);
+  const [apiAddress2, setApiAddress2] = useState(null);
+  const [apiHotelMinCharge, setApiHotelMinCharge] = useState(null);
   // const [hotelPolicyInfo, setHotelPolicyInfo] = useState([]);
 
   console.log(`fileUrl : ${fileUrl}`);
@@ -75,9 +76,9 @@ const CreateItem = () => {
         },
       );
 
-      console.log('CID:', res.data.IpfsHash);
+      console.log('uploadToInfura CID:', res.data.IpfsHash);
       const url = `https://gateway.pinata.cloud/ipfs/${res.data.IpfsHash}`;
-      console.log(`fileUrl : ${url}`);
+      console.log(`uploadToInfura fileUrl : ${url}`);
 
       setPostedFile(file);
       setFileUrl(url);
@@ -121,6 +122,7 @@ const CreateItem = () => {
     name: '',
     description: '',
   });
+  console.log('formInput.name: ', formInput.name);
   // hotel api 実装のため一旦コメントアウト
   // const router = useRouter();
 
@@ -130,16 +132,17 @@ const CreateItem = () => {
     setHotelBasicInfo(router.query);
     console.log('router.query.hotelImageUrl', router.query.hotelImageUrl);
     const { hotelImageUrl, hotelName, address2, hotelMinCharge } = router.query;
-    console.log('useEffectのimageURL :', hotelImageUrl);
-    console.log(Date.now());
+    console.log('useEffectのhotelName :', hotelName);
+
+    updateFormInput({ ...formInput,
+      name: hotelName,
+      description: hotelImageUrl,
+      price: hotelMinCharge,
+    }, []);
+
     // setApiHotelName(hotelName);
     // setApiAddress2(address2);
     // setApiHotelMinCharge(hotelMinCharge);
-
-    updateFormInput({ ...formInput, name: hotelName });
-    updateFormInput({ ...formInput, description: address2 });
-    updateFormInput({ ...formInput, price: hotelMinCharge });
-
     setImageApiUrl(hotelImageUrl);
   }, [router.isReady]);
 
@@ -148,40 +151,46 @@ const CreateItem = () => {
    */
   const createMarket = async () => {
     // get form datas
+    let contentUrl = '';
     const { name, description, price } = formInput;
     console.log(`"name: " ${name}`);
     console.log(`"description: " ${description}`);
     console.log(`"price: " ${price}`);
     console.log(`"fileUrl: " ${fileUrl}`);
     console.log(`"imageApiUrl: " ${imageApiUrl}`);
-    if (!name || !description || !price || (!fileUrl || !imageApiUrl)) return;
+    if (!name || !description || !price || !(fileUrl || imageApiUrl)) return;
+    if (fileUrl) {
+      contentUrl = fileUrl;
+    } else {
+      contentUrl = imageApiUrl;
+    }
 
     try {
       // create req param datas
-      const postData = new FormData();
-      postData.append('file', postedFile);
-      postData.append('pinataOptions', '{"cidVersion": 1}');
-      postData.append('pinataMetadata', '{"name": "テストname", "keyvalues": {"company": "nearHotel"}}');
-      console.log(`"postDataMarket: " ${postData}`);
+      // const postData = new FormData();
+      // postData.append('file', postedFile);
+      // postData.append('pinataOptions', '{"cidVersion": 1}');
+      // postData.append('pinataMetadata', '{"name": "テストname", "keyvalues": {"company": "nearHotel"}}');
+      // console.log(`"postDataMarket: " ${postData}`);
 
-      // upload to pinata
-      const res = await axios.post(
-        // API
-        `${baseAPIUrl}/pinning/pinFileToIPFS`,
-        // req param data
-        postData,
-        // header
-        {
-          headers: {
-            accept: 'application/json',
-            pinata_api_key: `${pinataApiKey}`,
-            pinata_secret_api_key: `${pinataApiSecret}`,
-            'Content-Type': `multipart/form-data; boundary=${postData}`,
-          },
-        },
-      );
+      // // upload to pinata
+      // const res = await axios.post(
+      //   // API
+      //   `${baseAPIUrl}/pinning/pinFileToIPFS`,
+      //   // req param data
+      //   postData,
+      //   // header
+      //   {
+      //     headers: {
+      //       accept: 'application/json',
+      //       pinata_api_key: `${pinataApiKey}`,
+      //       pinata_secret_api_key: `${pinataApiSecret}`,
+      //       'Content-Type': `multipart/form-data; boundary=${postData}`,
+      //     },
+      //   },
+      // );
 
-      // うまくいかないので別の方法で試してみた
+      // うまくいかないので別の方法で試してみた;
       // const data = JSON.stringify({
       //   ipfsPinHash: fileUrl,
       //   name,
@@ -200,18 +209,53 @@ const CreateItem = () => {
       //   data,
       // };
 
-      // const res = await axios(config);
+      // const data = JSON.stringify({
+      //   pinataOptions: {
+      //     cidVersion: 1,
+      //   },
+      //   pinataMetadata: {
+      //     name,
+      //     description,
+      //     image: fileUrl,
+      //   },
+      //   pinataContent: {
+      //     somekey: 'somevalue',
+      //   },
+      // });
 
+      const data = JSON.stringify({
+        name,
+        description,
+        image: contentUrl,
+      });
+      console.log('contentUrl: ', contentUrl);
+
+      const config = {
+        method: 'post',
+        url: 'https://api.pinata.cloud/pinning/pinJSONToIPFS',
+        headers: {
+          accept: 'application/json',
+          pinata_api_key: `${pinataApiKey}`,
+          pinata_secret_api_key: `${pinataApiSecret}`,
+          'Content-Type': 'application/json',
+        },
+        data,
+      };
+
+      const res = await axios(config);
       console.log(res.data);
 
       console.log(res.data);
-      console.log('CID:', res.data.IpfsHash);
+
+      console.log(res.data);
+      console.log('createMarket CID:', res.data.IpfsHash);
       const url = `https://gateway.pinata.cloud/ipfs/${res.data.IpfsHash}`;
-      console.log(`nftUrl : ${url}`);
+      console.log(`createMarket nftUrl : ${url}`);
 
       /* after file is uploaded to IPFS, pass the URL to save it on Blockchain */
       // call createSale fuction
       await createSale(url, formInput.price);
+      console.log('createSaleした後');
       router.push('/');
     } catch (error) {
       console.log('Error uploading file: ', error);

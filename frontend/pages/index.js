@@ -72,7 +72,9 @@ const Home = () => {
   };
 
   useEffect(() => {
+    console.log('fetchNFTs直前');
     fetchNFTs().then((items) => {
+      console.log('fetchNFTs通過');
       setNfts(items.reverse());
       setNftsCopy(items);
       setIsLoading(false);
