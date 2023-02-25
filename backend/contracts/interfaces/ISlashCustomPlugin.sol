@@ -26,7 +26,7 @@ interface ISlashCustomPlugin {
      *
      * Requirement
      * - Implement this function in the contract
-     * - Return true
+     * - Return 1 (v1 extension), 2 (v2 extension)
      */
-    function supportSlashExtensionInterface() external returns (bool);
+    function supportSlashExtensionInterface() external returns (uint8);
 }

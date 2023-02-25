@@ -38,3 +38,13 @@ function receivePayment(
 ## slashで決済する場合には、priceは表示するがその場でJPYに変換してやる必要がある。
 
 ⇨ 日本円で指定してあげる必要がある。
+
+## エンコードの例
+
+```js
+// parameter encode
+const exReserved = ethers.utils.AbiCoder.prototype.encode(
+      ['uint256'],
+      [nft.tokenId],
+);
+```

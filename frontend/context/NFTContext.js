@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
-import Web3Modal from 'web3modal';
 import superAgent from 'superagent';
+import Web3Modal from 'web3modal';
 
 import { MarketAddress, MarketAddressABI } from './constants';
 
@@ -205,6 +205,7 @@ export const NFTProvider = ({ children }) => {
     // get price
     const price = ethers.utils.parseUnits(nft.price.toString(), 'ether');
 
+    // ここをSlashの呼び出しに変更する。
     const transaction = await contract.createMarketSale(nft.tokenId, {
       value: price,
       gasLimit: 3000000,

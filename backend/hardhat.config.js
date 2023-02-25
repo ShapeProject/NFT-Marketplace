@@ -45,11 +45,11 @@ module.exports = {
     //   gasPrice: 20000000000,
     //   accounts: [PRIVATE_KEY]
     // },
-    // shibuya: {
-    //   url:"https://shibuya.public.blastapi.io",
-    //   chainId:81,
-    //   accounts:[PRIVATE_KEY],
-    // },
+    shibuya: {
+      url:"https://shibuya.public.blastapi.io",
+      chainId:81,
+      accounts:[PRIVATE_KEY],
+    },
     // shiden: {
     //   url:"https://shiden.api.onfinality.io/public",
     //   chainId:336,
@@ -65,20 +65,19 @@ module.exports = {
     //   accounts: [`0x${PRIVATE_KEY}`],
     // },
   },
-  // etherscan: {
-  //   apiKey: {
-  //     shibuya: GNOSISSCAN_API_KEY
-  //   },
-  //   customChains: [
-  //     {
-  //       network: "shibuya",
-  //       chainId: 81,
-  //       urls: {
-  //         apiURL: "https://blockscout.com/shibuya/api",
-  //         browserURL: "https://blockscout.com/shibuya/"
-  //       }
-  //     }
-  //   ]
-  // },
-  
+  etherscan: {
+     apiKey: {
+       shibuya: GNOSISSCAN_API_KEY
+     },
+     customChains: [
+       {
+         network: "shibuya",
+         chainId: 81,
+         urls: {
+           apiURL: "https://blockscout.com/shibuya/api",
+           browserURL: "https://blockscout.com/shibuya/"
+         }
+       }
+     ]
+  },
 };

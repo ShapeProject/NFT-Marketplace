@@ -24,6 +24,11 @@
           "internalType": "string",
           "name": "optional",
           "type": "string"
+        },
+        {
+          "internalType": "bytes",
+          "name": "reserved",
+          "type": "bytes"
         }
       ],
       "name": "receivePayment",
@@ -36,9 +41,9 @@
       "name": "supportSlashExtensionInterface",
       "outputs": [
         {
-          "internalType": "bool",
+          "internalType": "uint8",
           "name": "",
-          "type": "bool"
+          "type": "uint8"
         }
       ],
       "stateMutability": "nonpayable",

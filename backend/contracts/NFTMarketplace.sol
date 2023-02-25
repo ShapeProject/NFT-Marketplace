@@ -23,7 +23,7 @@ contract NFTMarketplace is ERC721URIStorage, ISlashCustomPlugin {
     address payable owner;
 
     mapping(uint256 => MarketItem) private idToMarketItem;
-    mapping(string => string) public purchaseInfo;
+    mapping(string => uint256) public purchaseInfo;
 
     // struct of MarketItem
     struct MarketItem {
@@ -302,8 +302,8 @@ contract NFTMarketplace is ERC721URIStorage, ISlashCustomPlugin {
         external
         pure
         override
-        returns (bool)
+        returns (uint8)
     {
-        return true;
+        return 2;
     }
 }
