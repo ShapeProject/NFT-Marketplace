@@ -2,25 +2,14 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 
+import { ethers } from 'ethers';
 import Link from 'next/link';
+import superAgent from 'superagent';
 import images from '../assets';
 import { Button, Loader, Modal } from '../components';
-import { PAYMENY_URL } from '../context/constants';
+import { API_ENDPOINT_URL } from '../context/constants';
 import { NFTContext } from '../context/NFTContext';
 import { shortenAddress } from '../utils/shortenAddress';
-
-// // checkBoxのため追記
-
-// if (typeof document !== 'undefined') {
-//   const scrollElm = document.getElementById('scroll_elm');
-//   const check = document.getElementById('check');
-//   // const endFlag = false;
-//   scrollElm.addEventListener('scroll', () => {
-//     if (scrollElm.scrollHeight - scrollElm.scrollTop === scrollElm.clientHeight) {
-//       check.disabled = false;
-//     }
-//   });
-// }
 
 /**
  * ApproveContractCmp component
@@ -142,7 +131,37 @@ const AssetDetails = () => {
 
   const [successModal, setSuccessModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [paymentUrl, setPaymentUrl] = useState('');
   const router = useRouter();
+
+  /**
+   * generate Payment URL function
+   */
+  const generateUrl = () => {
+    // create ext_reserved data
+    const exReserved = ethers.utils.AbiCoder.prototype.encode(
+      ['uint256'],
+      [nft.itemId],
+    );
+
+    // call geneateUrl API(今は、2000円で固定)
+    superAgent
+      .post(`${API_ENDPOINT_URL}/api/generateUrl`)
+      .query({
+        amount: 2000,
+        amount_type: 'JPY',
+        ext_reserved: exReserved,
+        ext_description: 'This is url for buying Shape NFT!',
+      })
+      .end((err, res) => {
+        if (err) {
+          console.log('error occuered  call generateUrl API:', err);
+          return err;
+        }
+        console.log('paymentURL:', res.body.result);
+        setPaymentUrl(res.body.result);
+      });
+  };
 
   // // checkBoxのため追記
   // const [checkBox, setCheckBox] = useState(true);
@@ -161,32 +180,11 @@ const AssetDetails = () => {
   useEffect(() => {
     if (!router.isReady) return;
 
+    generateUrl();
     setNft(router.query);
 
     setIsLoading(false);
   }, [router.isReady]);
-
-  // // checkBoxのため追記
-  // useEffect(() => {
-  //   if (!checkContractlModal) return;
-  //   setCheckContractModal(true);
-  //   if (typeof document !== 'undefined') {
-  //     const scrollElm = document.getElementById('scroll_elm');
-  //     const check = document.getElementById('check');
-  //     // const endFlag = false;
-  //     scrollElm.addEventListener('scroll', () => {
-  //       if (scrollElm.scrollHeight - scrollElm.scrollTop === scrollElm.clientHeight) {
-  //         check.disabled = false;
-  //       }
-  //     });
-  //   }
-  // }, [checkContractlModal]);
-
-  // checkBoxのため追記
-  // useEffect(() => {
-  //   if (!checkContract) return;
-  //   setCheckContract(!checkContract);
-  // }, [checkContract]);
 
   /**
    * approve function
@@ -347,7 +345,7 @@ const AssetDetails = () => {
           body={<PaymentBodyCmp nft={nft} nftCurrency={nftCurrency} />}
           footer={(
             <div className="flex flex-row sm:flex-col">
-              <Link href={PAYMENY_URL}>
+              <Link href={paymentUrl}>
                 <Image
                   src={images.paymentButton}
                   width={100}
