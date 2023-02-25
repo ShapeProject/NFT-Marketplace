@@ -2,8 +2,9 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import { useContext, useEffect, useRef, useState } from 'react';
 
+import axios from 'axios';
 import images from '../assets';
-import { Banner, CreatorCard, Loader, NFTCard, SearchBar } from '../components';
+import { Banner, CreatorCard, Loader, NFTCard, SearchBar, SearchHotel, HotelCard, Button } from '../components';
 import { NFTContext } from '../context/NFTContext';
 import { getCreators } from '../utils/getTopCreators';
 import { makeid } from '../utils/makeId';
@@ -20,14 +21,60 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hideButtons, setHideButtons] = useState(false);
   const [activeSelect, setActiveSelect] = useState('Recently Added');
+  const [hotelList, setHotelList] = useState([]);
+  const [formInput, updateFormInput] = useState({ contry: '', prefecture: '', city: '' });
 
   const scrollRef = useRef(null);
   const parentRef = useRef(null);
 
   const { theme } = useTheme();
+  const REQUEST_URL = 'https://app.rakuten.co.jp/services/api/Travel/SimpleHotelSearch/20170426';
+  const APP_ID = '1034665255539887341';
+
+  console.log('hotelList: ', hotelList);
+
+  // get hotel information from RAKUTEN TRAVEL API
+  const rakutenAPI = async () => {
+    try {
+      console.log('rakutenAPIに入りました！');
+      const { country, prefecture, city } = formInput;
+      const params = {
+        format: 'json',
+        largeClassCode: country,
+        middleClassCode: prefecture,
+        smallClassCode: city,
+        applicationId: APP_ID,
+      };
+      console.log('axios前！');
+
+      // upload to pinata
+      const res = await axios.get(
+        // APIのURL
+        REQUEST_URL,
+        // req params
+        { params },
+        { headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST,GET,PUT,DELETE',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        } },
+      );
+      console.log('axiosあと！');
+      // axios.defaults.withCredentials = true;
+      console.log('res: ', res.data.hotels);
+      const { hotels } = res.data;
+      setHotelList(hotels);
+
+      console.log('returnあと');
+    } catch (error) {
+      console.log('Error getting info of hotels: ', error);
+    }
+  };
 
   useEffect(() => {
+    console.log('fetchNFTs直前');
     fetchNFTs().then((items) => {
+      console.log('fetchNFTs通過');
       setNfts(items.reverse());
       setNftsCopy(items);
       setIsLoading(false);
@@ -131,6 +178,40 @@ const Home = () => {
           childStyles="md:text-4xl sm:text-2xl xs:text-xl text-left"
           parentStyle="justify-start mb-7 h-72 sm:h-60 p-12 xs:p-4 xs:h-44 rounded-3xl"
         />
+
+        <div className="flexBetween mx-4 xs:mx-0 minlg:mx-8 sm:flex-col sm:items-start">
+          <h1 className="flex-1 font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold sm:mb-4">
+            Seach Your Hotels
+          </h1>
+
+          <div className="flex-2 sm:w-full flex flex-row sm:flex-col">
+            <SearchHotel
+              placeholder="Put Country name"
+              handleSearch={(e) => updateFormInput({ ...formInput, country: e.target.value })}
+            />
+            <SearchHotel
+              placeholder="Prefecture name"
+              handleSearch={(e) => updateFormInput({ ...formInput, prefecture: e.target.value })}
+            />
+            <SearchHotel
+              placeholder="City name"
+              handleSearch={(e) => updateFormInput({ ...formInput, city: e.target.value })}
+            />
+            <Button
+              btnName="Search"
+              btnType="primary"
+              classStyles="rounded-md"
+              handleClick={rakutenAPI}
+            />
+          </div>
+        </div>
+        <div className="mt-3 w-full flex flex-wrap justify-start md:justify-center">
+          {!hotelList ? (
+            <p>You can search Hotel here</p>
+          ) : (
+            <HotelCard key={hotelList.hotelNo} hotels={hotelList} />
+          )}
+        </div>
 
         {!isLoading && !nfts.length ? (
           <h1 className="font-poppins dark:text-white text-nft-black-1 text-2xl minlg:text-4xl font-semibold ml-4 xs:ml-0">

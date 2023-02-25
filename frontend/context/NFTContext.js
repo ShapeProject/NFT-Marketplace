@@ -2,6 +2,7 @@ import axios from 'axios';
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
 import Web3Modal from 'web3modal';
+import superAgent from 'superagent';
 
 import { MarketAddress, MarketAddressABI } from './constants';
 
@@ -19,6 +20,7 @@ export const NFTProvider = ({ children }) => {
   const nftCurrency = 'ETH';
   const [currentAccount, setCurrentAccount] = useState('');
   const [isLoadingNFT, setIsLoadingNFT] = useState(false);
+  const [nfts, setNfts] = useState([]);
 
   /**
    * fetchNFTs function
@@ -27,23 +29,73 @@ export const NFTProvider = ({ children }) => {
   const fetchNFTs = async () => {
     setIsLoadingNFT(false);
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    // const provider = new ethers.providers.JsonRpcProvider('https://eth-goerli.g.alchemy.com/v2/PPq6amF0yaNOJF3LlBoggF5UIzDSgnEe');
+    // const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const provider = new ethers.providers.JsonRpcProvider('https://eth-goerli.g.alchemy.com/v2/PPq6amF0yaNOJF3LlBoggF5UIzDSgnEe');
 
     // get contract object
     const contract = fetchContract(provider);
+    console.log('contractAddress: ', contract.address);
     // get MarketItems
     const data = await contract.fetchMarketItems();
 
     const items = await Promise.all(
       data.map(async ({ tokenId, seller, owner, price: unformattedPrice }) => {
+        console.log('tokenId: ', tokenId);
+        console.log('seller: ', seller);
+        console.log('owner: ', owner);
         // get tokenURI
         const tokenURI = await contract.tokenURI(tokenId);
-        // get token metadata
-        const {
-          data: { image, name, description },
-        } = await axios.get(tokenURI);
+        console.log('tokenURI: ', tokenURI);
+
+        // 下記方法でtokenのmetadata取れなかったので一旦コメントアウトget token metadata
+        // const {
+        //   data: { image, name, description },
+        // } = await axios.get(tokenURI);
+        // console.log('image: ', image);
         // get NFT price
+
+        const metadata = async () => {
+          await superAgent
+            .get(`https://deep-index.moralis.io/api/v2/nft/${contract.address}`)
+            .query({
+            // chain: `${networkId}`,0x5
+              chain: '0x5',
+              format: 'decimal',
+            })
+            .set({
+              Accept: 'application/json',
+              'x-api-key': `${process.env.NEXT_PUBLIC_PROJECT_MORALIS_API_KEY}`,
+            })
+            .end((err, res) => {
+              if (err) {
+                console.log('NFTのデータ取得中にエラー発生', err);
+                return err;
+              }
+              console.log('データ取得成功！：', res.body);
+              console.log('データ取得成功！：', res.body.result);
+              // nft自体が配列のためそれをループして回してとってくるひつようがあるnft[].metadataでやっと取ってこれる
+              setNfts(res.body.result);
+              return res.body.result;
+              // const nft = res.body.result;
+              // console.log('Context内のnft！：', nft);
+              // console.log('JSON.parse(nft[1].metadata)', JSON.parse(nft[1].metadata).name);
+              // console.log('nft: ', nft);
+              // const NFTData = JSON.parse(nft[1].metadata);
+              // setNfts(JSON.parse(nft[1].metadata));
+              // console.log('NFTData: ', NFTData);
+              // console.log('nft.name: ', NFTData.nsame);
+              // console.log('nft.image: ', NFTData.image);
+              // console.log('nft.description: ', NFTData.description);
+              // return NFTData;
+            });
+        };
+
+        await metadata();
+        console.log('tokenURI: ', tokenURI);
+        console.log('name: ', nfts.name);
+        console.log('description: ', nfts.description);
+        console.log('image: ', nfts.image);
+
         const price = ethers.utils.formatUnits(
           unformattedPrice.toString(),
           'ether',
@@ -55,9 +107,9 @@ export const NFTProvider = ({ children }) => {
           id: tokenId.toNumber(),
           seller,
           owner,
-          image,
-          name,
-          description,
+          image: nfts.metadata.image,
+          name: nfts.metadata.name,
+          description: nfts.metadata.description,
           tokenURI,
         };
       }),

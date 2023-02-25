@@ -64,5 +64,6 @@ module.exports = {
         aspects: ['noHref', 'invalidHref', 'preferButton'],
       },
     ],
+    'no-param-reassign': 0,
   },
 };

@@ -8,6 +8,8 @@ import SearchBar from './SearchBar';
 import Button from './Button';
 import Banner from './Banner';
 import Input from './Input';
+import SearchHotel from './SearchHotel';
+import HotelCard from './HotelCard';
 
 export {
   Navbar,
@@ -20,4 +22,6 @@ export {
   Button,
   Banner,
   Input,
+  SearchHotel,
+  HotelCard,
 };
