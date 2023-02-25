@@ -32,6 +32,7 @@
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "sharp": "^0.31.3",
+    "superagent": "^8.0.9",
     "web3modal": "^1.9.5"
   },
   "devDependencies": {

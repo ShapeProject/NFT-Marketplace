@@ -22,8 +22,7 @@ module.exports = {
   networks: {
     goerli: {
       url: "https://eth-goerli.g.alchemy.com/v2/PPq6amF0yaNOJF3LlBoggF5UIzDSgnEe",
-      // accounts: [`0x${PRIVATE_KEY}`],
-      accounts: ["0x7613804cf920d15097a7e2cd92febd64f981e55579091c50aa7aae61116b9847"],
+      accounts: [`0x${PRIVATE_KEY}`],
     },
     // sepolia: {     
     //   url: "https://rpc.sepolia.org",      
