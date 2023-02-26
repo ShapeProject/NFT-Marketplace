@@ -71,11 +71,11 @@ export const NFTProvider = ({ children }) => {
                 console.log('NFTのデータ取得中にエラー発生', err);
                 return err;
               }
-              console.log('データ取得成功！：', res.body);
               console.log('データ取得成功！：', res.body.result);
+              console.log('データ取得成功！：', res.body.result[0].metadata);
               // nft自体が配列のためそれをループして回してとってくるひつようがあるnft[].metadataでやっと取ってこれる
-              setNfts(res.body.result);
-              return res.body.result;
+              setNfts(res.body.result[0].metadata);
+              return JSON.parse(res.body.result[0].metadata);
               // const nft = res.body.result;
               // console.log('Context内のnft！：', nft);
               // console.log('JSON.parse(nft[1].metadata)', JSON.parse(nft[1].metadata).name);
@@ -90,11 +90,13 @@ export const NFTProvider = ({ children }) => {
             });
         };
 
-        await metadata();
-        console.log('tokenURI: ', tokenURI);
-        console.log('name: ', nfts.name);
-        console.log('description: ', nfts.description);
-        console.log('image: ', nfts.image);
+        const nftData = async () => {
+          const meta = await metadata();
+          console.log('meta: ', meta);
+          console.log('name: ', meta.name);
+          console.log('description: ', meta.description);
+          console.log('image: ', meta.image);
+        };
 
         const price = ethers.utils.formatUnits(
           unformattedPrice.toString(),
@@ -107,9 +109,9 @@ export const NFTProvider = ({ children }) => {
           id: tokenId.toNumber(),
           seller,
           owner,
-          image: nfts.metadata.image,
-          name: nfts.metadata.name,
-          description: nfts.metadata.description,
+          image: nftData.metadata.image,
+          name: nftData.metadata.name,
+          description: nftData.metadata.description,
           tokenURI,
         };
       }),
