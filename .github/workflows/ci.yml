@@ -5,16 +5,16 @@ on: [push]
 jobs:
   install:
     runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3
-        - uses: actions/setup-node@v3
-        - uses: actions/cache@v3
-          id: npm-cache
-          with:
-            path: "**/node_modules"
-            key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-{{ checksum "patches.hash" }}
-        - name: Install packages
-          run: pnpm install
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - uses: actions/cache@v3
+        id: npm-cache
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-{{ checksum "patches.hash" }}
+      - name: Install packages
+        run: pnpm install
   # contract test action
   contract-test:
     runs-on: ubuntu-latest
