@@ -109,7 +109,7 @@ NFTMarket deployed to:  0xA1a196ee107067Bf34F69fadb4997Ab2D5f66827
 5. start frontend
 
 ```bash
-pnpm frontend run dev
+pnpm frontend run dev 
 ```
 
 ### 参考文献
