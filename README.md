@@ -89,17 +89,13 @@ NEXT_PUBLIC_PROJECT_SECRET=YOUR_DATA
 3. install modules
 
 ```bash
-cd frontend && npm i
-```
-
-```bash
-cd backend && npm i
+pnpm install
 ```
 
 4. deploy contract
 
 ```bash
-cd backend && npm run deploy --network <network_name>
+pnpm backend run deploy --network <network_name>
 ```
 
 result example
@@ -113,7 +109,7 @@ NFTMarket deployed to:  0xA1a196ee107067Bf34F69fadb4997Ab2D5f66827
 5. start frontend
 
 ```bash
-cd frontend && yarn dev
+pnpm frontend run dev
 ```
 
 ### 参考文献
